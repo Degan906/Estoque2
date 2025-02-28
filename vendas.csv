@@ -1,2 +1,2 @@
-venda_id,produto_id,quantidade,data
-1,1,20,2025-02-28
+venda_id,produto_id,quantidade,data,total,produtos
+1,,,2025-02-28,410.0,"[{""produto_id"": 1, ""nome"": ""Produto A"", ""quantidade"": 20, ""preco_unitario"": 10.5, ""total"": 210.0}, {""produto_id"": 2, ""nome"": ""Produto B"", ""quantidade"": 10, ""preco_unitario"": 20.0, ""total"": 200.0}]"
