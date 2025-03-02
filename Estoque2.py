@@ -11,7 +11,7 @@ st.set_page_config(page_title="Controle de Estoque e Vendas", layout="wide")
 
 # Configurações do GitHub
 GITHUB_REPO = "https://api.github.com/repos/Degan906/Estoque2/contents"
-GITHUB_TOKEN = "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"
+GITHUB_TOKEN = "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"
 HEADERS = {
     "Authorization": f"token {GITHUB_TOKEN}",
     "Accept": "application/vnd.github.v3+json"
