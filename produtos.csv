@@ -1,5 +1,6 @@
-id,nome,preco
-1,Produto A,10.5
-2,Produto B,20.0
-3,Produto C,15.4
-4,Testes1 - Teste de produto 1,15.8
+id,nome,preco,quantidade
+1,Produto A,10.5,100.0
+2,Produto B,20.0,50.0
+3,Produto C,15.4,0.0
+4,Testes1 - Teste de produto 1,15.8,0.0
+5,Testes1 - Teste de produto 2,14.81,0.0
