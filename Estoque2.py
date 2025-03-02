@@ -5,13 +5,14 @@ import base64
 import io
 import json
 import numpy as np
+from datetime import datetime  # Importar datetime para manipulação de datas
 
 # Configuração da página
 st.set_page_config(page_title="Controle de Estoque e Vendas", layout="wide")
 
 # Configurações do GitHub
 GITHUB_REPO = "https://api.github.com/repos/Degan906/Estoque2/contents"
-GITHUB_TOKEN = "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"
+GITHUB_TOKEN = "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"
 HEADERS = {
     "Authorization": f"token {GITHUB_TOKEN}",
     "Accept": "application/vnd.github.v3+json"
@@ -63,6 +64,20 @@ def carregar_dados():
     usuarios = ler_csv_do_github("usuarios.csv")
     estoque = ler_csv_do_github("estoque.csv")
     vendas = ler_csv_do_github("vendas.csv")
+    
+    # Adicionar a coluna 'nome' ao estoque
+    if estoque is not None and produtos is not None:
+        estoque = estoque.merge(
+            produtos[["id", "nome"]],
+            left_on="produto_id",
+            right_on="id",
+            how="left"
+        ).drop(columns=["id"])  # Remover a coluna 'id' duplicada
+    
+    # Converter a coluna 'data' para datetime ao carregar os dados
+    if vendas is not None and "data" in vendas.columns:
+        vendas["data"] = pd.to_datetime(vendas["data"], format="%d/%m/%y %H:%M", errors="coerce")
+    
     return produtos, usuarios, estoque, vendas
 
 # Inicializar os dados na sessão
@@ -74,6 +89,14 @@ def salvar_dados(produtos=None, estoque=None, vendas=None):
     if produtos is not None:
         gravar_csv_no_github("produtos.csv", produtos)
     if estoque is not None:
+        # Garantir que a coluna 'nome' esteja presente
+        if "nome" not in estoque.columns and "produto_id" in estoque.columns:
+            estoque = estoque.merge(
+                st.session_state.produtos[["id", "nome"]],
+                left_on="produto_id",
+                right_on="id",
+                how="left"
+            ).drop(columns=["id"])  # Remover a coluna 'id' duplicada
         gravar_csv_no_github("estoque.csv", estoque)
     if vendas is not None:
         gravar_csv_no_github("vendas.csv", vendas)
@@ -131,7 +154,6 @@ else:
             "Dashboard",
             "Cadastro de Produtos",
             "Entrada no Estoque",
-            "Controle de Estoque",
             "Registro de Vendas",
             "Relatório de Vendas",
             "Zerar Estoque",  # Nova opção no menu
@@ -142,6 +164,24 @@ else:
     if menu == "Dashboard":
         st.title("Dashboard")
         st.write("Bem-vindo ao sistema de controle de estoque e vendas!")
+
+        # Exibir a tabela de estoque
+        st.subheader("Tabela de Estoque")
+        if st.session_state.estoque is not None:
+            try:
+                # Verificar se a coluna 'quantidade' existe no DataFrame estoque
+                if "quantidade" not in st.session_state.estoque.columns:
+                    st.error("A coluna 'quantidade' não foi encontrada no arquivo 'estoque.csv'.")
+                else:
+                    # Selecionar as colunas relevantes
+                    tabela_estoque = st.session_state.estoque[["produto_id", "nome", "quantidade"]]
+                    
+                    # Exibir a tabela
+                    st.dataframe(tabela_estoque)
+            except Exception as e:
+                st.error(f"Erro ao processar a tabela de estoque: {str(e)}")
+        else:
+            st.error("Erro ao carregar o estoque. Verifique o arquivo 'estoque.csv' no repositório do GitHub.")
 
     elif menu == "Cadastro de Produtos":
         st.title("Cadastro de Produtos")
@@ -172,62 +212,26 @@ else:
             salvar_dados(estoque=st.session_state.estoque)
             st.success(f"{quantidade} unidades de '{produto_selecionado}' adicionadas ao estoque.")
 
-    elif menu == "Controle de Estoque":
-        st.title("Controle de Estoque")
-        
-        # Verificar se as colunas necessárias existem nos DataFrames
-        if "produto_id" not in st.session_state.estoque.columns or "id" not in st.session_state.produtos.columns:
-            st.error("As colunas 'produto_id' (estoque) ou 'id' (produtos) não foram encontradas.")
-        else:
-            # Fazer o merge entre estoque e produtos
-            try:
-                # Depuração: Exibir os DataFrames antes do merge
-                st.write("DataFrame 'estoque':", st.session_state.estoque)
-                st.write("DataFrame 'produtos':", st.session_state.produtos)
-                
-                # Realizar o merge
-                estoque_com_nomes = st.session_state.estoque.merge(
-                    st.session_state.produtos, 
-                    left_on="produto_id", 
-                    right_on="id", 
-                    how="left"
-                )
-                
-                # Depuração: Exibir o DataFrame após o merge
-                st.write("DataFrame após o merge:", estoque_com_nomes)
-                
-                # Verificar se a coluna 'quantidade' existe após o merge
-                if "quantidade" not in estoque_com_nomes.columns:
-                    st.error("A coluna 'quantidade' não foi encontrada após o merge. Verifique o arquivo 'estoque.csv'.")
-                else:
-                    # Certificar-se de que a coluna 'quantidade' é numérica
-                    estoque_com_nomes["quantidade"] = pd.to_numeric(estoque_com_nomes["quantidade"], errors="coerce")
-                    
-                    # Filtrar apenas as colunas relevantes
-                    tabela_estoque = estoque_com_nomes[["nome", "quantidade"]]
-                    
-                    # Exibir a tabela
-                    st.subheader("Estoque Atual")
-                    st.dataframe(tabela_estoque)
-                    
-                    # Botão para zerar o estoque
-                    if st.button("Zerar Estoque"):
-                        st.session_state.estoque["quantidade"] = 0  # Zerar a quantidade de todos os produtos
-                        salvar_dados(estoque=st.session_state.estoque)  # Salvar a alteração no GitHub
-                        st.success("Estoque zerado com sucesso!")
-            except Exception as e:
-                st.error(f"Erro ao processar os dados de estoque: {e}")
-
     elif menu == "Registro de Vendas":
         st.title("Registro de Vendas")
         
         # Lista de produtos disponíveis
         produtos_list = st.session_state.produtos["nome"].tolist()
         produto_selecionado = st.selectbox("Selecione o Produto", produtos_list)
-        quantidade = st.number_input("Quantidade", min_value=1)
+        
+        # Obter o ID do produto selecionado
+        produto_id = st.session_state.produtos.loc[st.session_state.produtos["nome"] == produto_selecionado, "id"].values[0]
+        
+        # Verificar a quantidade disponível em estoque
+        quantidade_estoque = st.session_state.estoque.loc[st.session_state.estoque["produto_id"] == produto_id, "quantidade"].values
+        quantidade_disponivel = quantidade_estoque[0] if len(quantidade_estoque) > 0 else 0
+        
+        # Exibir a quantidade disponível em estoque
+        st.write(f"Quantidade disponível em estoque: **{quantidade_disponivel}** unidades")
+        
+        quantidade = st.number_input("Quantidade", min_value=1, max_value=quantidade_disponivel if quantidade_disponivel > 0 else 1)
         
         # Obter o preço unitário do produto selecionado
-        produto_id = st.session_state.produtos.loc[st.session_state.produtos["nome"] == produto_selecionado, "id"].values[0]
         preco_unitario = st.session_state.produtos.loc[st.session_state.produtos["id"] == produto_id, "preco"].values[0]
         total_produto = quantidade * preco_unitario
         
@@ -236,15 +240,18 @@ else:
             st.session_state.itens_venda = []
         
         if st.button("Adicionar Produto à Venda"):
-            item = {
-                "produto_id": produto_id,
-                "nome": produto_selecionado,
-                "quantidade": quantidade,
-                "preco_unitario": preco_unitario,
-                "total": total_produto
-            }
-            st.session_state.itens_venda.append(item)
-            st.success(f"{quantidade} unidades de '{produto_selecionado}' adicionadas à venda.")
+            if quantidade > quantidade_disponivel:
+                st.error("Quantidade solicitada maior que o estoque disponível!")
+            else:
+                item = {
+                    "produto_id": produto_id,
+                    "nome": produto_selecionado,
+                    "quantidade": quantidade,
+                    "preco_unitario": preco_unitario,
+                    "total": total_produto
+                }
+                st.session_state.itens_venda.append(item)
+                st.success(f"{quantidade} unidades de '{produto_selecionado}' adicionadas à venda.")
         
         # Exibir os itens adicionados à venda
         if st.session_state.itens_venda:
@@ -268,7 +275,7 @@ else:
                 # Salvar a venda no arquivo CSV
                 nova_venda = {
                     "venda_id": len(st.session_state.vendas) + 1,
-                    "data": pd.Timestamp.now().strftime("%Y-%m-%d"),
+                    "data": datetime.now().strftime("%d/%m/%y %H:%M"),  # Formato dd/MM/yy hh:mm
                     "total": float(total_venda),  # Converter para float
                     "produtos": json.dumps(converter_para_json_serializavel(st.session_state.itens_venda))  # Usar função auxiliar
                 }
@@ -293,18 +300,33 @@ else:
         
         if st.button("Gerar Relatório"):
             # Certificar-se de que a coluna 'data' é do tipo datetime
-            st.session_state.vendas["data"] = pd.to_datetime(st.session_state.vendas["data"], format="%Y-%m-%d", errors="coerce")
+            st.session_state.vendas["data"] = pd.to_datetime(st.session_state.vendas["data"], format="%d/%m/%y %H:%M", errors="coerce")
+            
+            # Converter as datas de início e fim para datetime
+            data_inicio = pd.to_datetime(data_inicio)
+            data_fim = pd.to_datetime(data_fim) + pd.Timedelta(days=1)  # Incluir o dia final
             
             # Filtrar as vendas no intervalo de datas
             vendas_filtradas = st.session_state.vendas[
-                (st.session_state.vendas["data"] >= pd.Timestamp(data_inicio)) & 
-                (st.session_state.vendas["data"] <= pd.Timestamp(data_fim))
+                (st.session_state.vendas["data"] >= data_inicio) & 
+                (st.session_state.vendas["data"] < data_fim)  # Usar < para não incluir o dia seguinte
             ]
             
             if not vendas_filtradas.empty:
                 # Exibir o grid com as vendas
                 st.subheader("Vendas no Período")
-                st.dataframe(vendas_filtradas[["venda_id", "data", "total"]])
+                
+                # Criar uma lista expansível para cada venda
+                for index, venda in vendas_filtradas.iterrows():
+                    with st.expander(f"Venda ID: {venda['venda_id']} - Total: R$ {venda['total']:.2f}"):
+                        st.write(f"**Data da Venda:** {venda['data'].strftime('%d/%m/%y %H:%M')}")  # Formato dd/MM/yy hh:mm
+                        st.write(f"**Total da Venda:** R$ {venda['total']:.2f}")
+                        
+                        # Exibir os itens vendidos
+                        itens_venda = json.loads(venda["produtos"])
+                        st.subheader("Itens Vendidos")
+                        itens_df = pd.DataFrame(itens_venda)
+                        st.dataframe(itens_df[["nome", "quantidade", "preco_unitario", "total"]])
                 
                 # Calcular o valor total das vendas no período
                 total_vendas_periodo = vendas_filtradas["total"].sum()
