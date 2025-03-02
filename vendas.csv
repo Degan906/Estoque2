@@ -1,3 +1,3 @@
 venda_id,produto_id,quantidade,data,total,produtos
-1,,,2025-03-01 00:00:00,459.0,"[{""produto_id"": 1, ""nome"": ""Produto A"", ""quantidade"": 10, ""preco_unitario"": 10.5, ""total"": 105.0}, {""produto_id"": 2, ""nome"": ""Produto B"", ""quantidade"": 10, ""preco_unitario"": 20.0, ""total"": 200.0}, {""produto_id"": 3, ""nome"": ""Produto C"", ""quantidade"": 10, ""preco_unitario"": 15.4, ""total"": 154.0}]"
+1,,,2025-03-01,459.0,"[{""produto_id"": 1, ""nome"": ""Produto A"", ""quantidade"": 10, ""preco_unitario"": 10.5, ""total"": 105.0}, {""produto_id"": 2, ""nome"": ""Produto B"", ""quantidade"": 10, ""preco_unitario"": 20.0, ""total"": 200.0}, {""produto_id"": 3, ""nome"": ""Produto C"", ""quantidade"": 10, ""preco_unitario"": 15.4, ""total"": 154.0}]"
 2,,,2025-03-02,10.5,"[{""produto_id"": 1, ""nome"": ""Produto A"", ""quantidade"": 1, ""preco_unitario"": 10.5, ""total"": 10.5}]"
