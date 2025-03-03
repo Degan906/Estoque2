@@ -1,1 +1,2 @@
 venda_id,produto_id,quantidade,data,total,produtos
+1,,,03/03/25 18:48,128.0,"[{""produto_id"": ""20370"", ""nome"": ""LUBRIFICANTES"", ""quantidade"": 1, ""preco_unitario"": 32.0, ""total"": 32.0}, {""produto_id"": ""20370"", ""nome"": ""LUBRIFICANTES"", ""quantidade"": 1, ""preco_unitario"": 32.0, ""total"": 32.0}, {""produto_id"": ""20370"", ""nome"": ""LUBRIFICANTES"", ""quantidade"": 2, ""preco_unitario"": 32.0, ""total"": 64.0}]"
