@@ -1,1 +1,2 @@
 venda_id,produto_id,quantidade,data,total,produtos
+1,,,04/03/25 16:31,515.0,"[{""produto_id"": ""20775"", ""nome"": ""M45011 GOL 91/95 MAIOR"", ""quantidade"": 5.0, ""preco_unitario"": 18.0, ""total"": 90.0}, {""produto_id"": ""20624"", ""nome"": ""CORSA/MONTANA 02/07 CROMADA"", ""quantidade"": 5.0, ""preco_unitario"": 85.0, ""total"": 425.0}]"
