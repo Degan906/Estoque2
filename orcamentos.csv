@@ -1,1 +1,2 @@
 orcamento_id,data,total,produtos,status
+7,04/03/25 13:58,1460.0,"[{""produto_id"": ""20371"", ""nome"": ""5W30"", ""quantidade"": 1.0, ""preco_unitario"": 28.0, ""total"": 28.0}, {""produto_id"": ""20375"", ""nome"": ""OLEO 20W50 CASTROL GTX"", ""quantidade"": 50.0, ""preco_unitario"": 28.0, ""total"": 1400.0}, {""produto_id"": ""20370"", ""nome"": ""LUBRIFICANTES"", ""quantidade"": 1.0, ""preco_unitario"": 32.0, ""total"": 32.0}]",Pendente
