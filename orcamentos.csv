@@ -1,3 +1,4 @@
 orcamento_id,data,total,produtos,status
 1,2025-03-03 18:47:00,112.0,"[{""produto_id"": ""20371"", ""nome"": ""5W30"", ""quantidade"": 2, ""preco_unitario"": 28.0, ""total"": 56.0}, {""produto_id"": ""20371"", ""nome"": ""5W30"", ""quantidade"": 2, ""preco_unitario"": 28.0, ""total"": 56.0}]",Validado
 2,2025-03-03 22:44:00,64.0,"[{""produto_id"": ""20370"", ""nome"": ""LUBRIFICANTES"", ""quantidade"": 1, ""preco_unitario"": 32.0, ""total"": 32.0}, {""produto_id"": ""20370"", ""nome"": ""LUBRIFICANTES"", ""quantidade"": 1, ""preco_unitario"": 32.0, ""total"": 32.0}]",Pendente
+3,03/03/25 22:44,60.0,"[{""produto_id"": ""20370"", ""nome"": ""LUBRIFICANTES"", ""quantidade"": 1, ""preco_unitario"": 32.0, ""total"": 32.0}, {""produto_id"": ""20371"", ""nome"": ""5W30"", ""quantidade"": 1, ""preco_unitario"": 28.0, ""total"": 28.0}]",Pendente
