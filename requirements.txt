@@ -7,3 +7,4 @@ streamlit
 pandas
 openpyxl
 xlrd
+Python==3.11.5
