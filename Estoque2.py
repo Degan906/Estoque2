@@ -7,58 +7,59 @@ import json
 import numpy as np
 from datetime import datetime
 
-# Configuração da página
+
 st.set_page_config(page_title="Controle de Estoque e Orçamentos", layout="wide")
 
-# Configurações do GitHub
+
 GITHUB_REPO = "https://api.github.com/repos/Degan906/Estoque2/contents"
-GITHUB_TOKEN = "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"  # REPLACE WITH YOUR ACTUAL TOKEN
+GITHUB_TOKEN = "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"  
 HEADERS = {
     "Authorization": f"token {GITHUB_TOKEN}",
     "Accept": "application/vnd.github.v3+json"
 }
 
-# Função para ler um arquivo CSV do GitHub
+
 def ler_csv_do_github(nome_arquivo):
     url = f"{GITHUB_REPO}/{nome_arquivo}"
     response = requests.get(url, headers=HEADERS)
+    
     if response.status_code == 200:
         conteudo = base64.b64decode(response.json()["content"]).decode("utf-8")
         return pd.read_csv(io.StringIO(conteudo))
     else:
         st.error(f"Erro ao ler {nome_arquivo} do GitHub: {response.text}")
-        return None
+        return pd.DataFrame()  
 
-# Função para gravar um arquivo CSV no GitHub
+
 def gravar_csv_no_github(nome_arquivo, df):
     url = f"{GITHUB_REPO}/{nome_arquivo}"
+
     
-    # Ler o arquivo atual para obter o SHA
     response = requests.get(url, headers=HEADERS)
     if response.status_code == 200:
         conteudo_atual = response.json()
-        sha = conteudo_atual["sha"]  # Obter o SHA do conteúdo atual
+        sha = conteudo_atual["sha"]  
     else:
         st.error(f"Erro ao ler {nome_arquivo} do GitHub: {response.text}")
         return
+
     
-    # Preparar o novo conteúdo
     conteudo = df.to_csv(index=False)
     conteudo_base64 = base64.b64encode(conteudo.encode("utf-8")).decode("utf-8")
     data = {
         "message": f"Atualizando {nome_arquivo}",
         "content": conteudo_base64,
-        "sha": sha  # Incluir o SHA do conteúdo atual
+        "sha": sha  
     }
+
     
-    # Enviar a requisição PUT para atualizar o arquivo
     response = requests.put(url, headers=HEADERS, json=data)
     if response.status_code not in [200, 201]:
         st.error(f"Erro ao gravar {nome_arquivo} no GitHub: {response.text}")
     else:
         st.success(f"{nome_arquivo} atualizado com sucesso!")
 
-# Função para carregar dados dos arquivos CSV do GitHub
+
 def carregar_dados():
     produtos = ler_csv_do_github("produtos.csv")
     usuarios = ler_csv_do_github("usuarios.csv")
@@ -66,27 +67,45 @@ def carregar_dados():
     vendas = ler_csv_do_github("vendas.csv")
     orcamentos = ler_csv_do_github("orcamentos.csv")
 
-    if orcamentos is None:
-        orcamentos = pd.DataFrame(columns=["orcamento_id", "data", "total", "produtos", "status"])
     
-    if estoque is None:
+    if orcamentos.empty:
+        orcamentos = pd.DataFrame(columns=["orcamento_id", "data", "total", "produtos", "status"])
+    if estoque.empty:
         estoque = pd.DataFrame(columns=["produto_id", "nome", "quantidade"])
     
-    if orcamentos is not None and "data" in orcamentos.columns:
+
+    if "data" in orcamentos.columns:
         orcamentos["data"] = pd.to_datetime(orcamentos["data"], format="%d/%m/%y %H:%M", errors="coerce")
-    if vendas is not None and "data" in vendas.columns:
+    if "data" in vendas.columns:
         vendas["data"] = pd.to_datetime(vendas["data"], format="%d/%m/%y %H:%M", errors="coerce")
-    
-    if estoque is not None and "produto_id" in estoque.columns:
-        estoque["produto_id"] = estoque["produto_id"].astype(int)
-    
-    if produtos is not None and "preco" in produtos.columns:
+
+
+    if "produto_id" in estoque.columns:
+        estoque["produto_id"] = pd.to_numeric(estoque["produto_id"], errors="coerce").fillna(0).astype(int)
+    if "preco" in produtos.columns:
         produtos["preco"] = pd.to_numeric(produtos["preco"], errors="coerce")
-    
-    if produtos is not None and "id" in produtos.columns:
+    if "id" in produtos.columns:
         produtos["id"] = pd.to_numeric(produtos["id"], errors="coerce").fillna(0).astype(int)
-    
+
     return produtos, usuarios, estoque, orcamentos, vendas
+
+
+produtos, usuarios, estoque, orcamentos, vendas = carregar_dados()
+
+
+if "usuarios" not in st.session_state:
+    if usuarios.empty:
+        usuarios = pd.DataFrame(columns=["id", "nome", "senha"])  
+    st.session_state.usuarios = usuarios
+
+
+if isinstance(st.session_state.usuarios, pd.DataFrame):
+    if "senha" in st.session_state.usuarios.columns:
+        st.session_state.usuarios["senha"] = st.session_state.usuarios["senha"].astype(str)
+    else:
+        st.warning("A coluna 'senha' não existe no DataFrame de usuários.")
+else:
+    st.error("Erro: `usuarios` não é um DataFrame.")
 
 # Inicializar os dados na sessão
 if "produtos" not in st.session_state:
