@@ -128,16 +128,22 @@ if not st.session_state.logado:
     email = st.text_input("Email").strip().lower()
     senha = st.text_input("Senha", type="password").strip()
     if st.button("Entrar"):
-        st.session_state.usuarios["senha"] = st.session_state.usuarios["senha"].astype(str)
-        usuario = st.session_state.usuarios[
-            (st.session_state.usuarios["email"].str.strip().str.lower() == email) & 
-            (st.session_state.usuarios["senha"].str.strip() == senha)
-        ]
-        if not usuario.empty:
+        # Verificação de dados de login para admin
+        if email == "admin@example.com" and senha == "admin":
             st.session_state.logado = True
-            st.success("Login realizado com sucesso!")
+            st.success("Login administrativo realizado com sucesso!")
         else:
-            st.error("Email ou senha inválidos.")
+            # Verificação de dados de login para usuários comuns
+            st.session_state.usuarios["senha"] = st.session_state.usuarios["senha"].astype(str)
+            usuario = st.session_state.usuarios[
+                (st.session_state.usuarios["email"].str.strip().str.lower() == email) & 
+                (st.session_state.usuarios["senha"].str.strip() == senha)
+            ]
+            if not usuario.empty:
+                st.session_state.logado = True
+                st.success("Login realizado com sucesso!")
+            else:
+                st.error("Email ou senha inválidos.")
 
 # Sistema Principal (após login)
 else:
