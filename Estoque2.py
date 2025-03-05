@@ -7,17 +7,15 @@ import json
 import numpy as np
 from datetime import datetime
 
-
 st.set_page_config(page_title="Controle de Estoque e Orçamentos", layout="wide")
 
-
+# Substitua pelo seu token do GitHub
 GITHUB_REPO = "https://api.github.com/repos/Degan906/Estoque2/contents"
-GITHUB_TOKEN = "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"  
+GITHUB_TOKEN = "seu_novo_token_aqui"  # Substitua pelo seu token
 HEADERS = {
     "Authorization": f"token {GITHUB_TOKEN}",
     "Accept": "application/vnd.github.v3+json"
 }
-
 
 def ler_csv_do_github(nome_arquivo):
     url = f"{GITHUB_REPO}/{nome_arquivo}"
@@ -28,37 +26,31 @@ def ler_csv_do_github(nome_arquivo):
         return pd.read_csv(io.StringIO(conteudo))
     else:
         st.error(f"Erro ao ler {nome_arquivo} do GitHub: {response.text}")
-        return pd.DataFrame()  
-
+        return pd.DataFrame()  # Retorna um DataFrame vazio em caso de erro
 
 def gravar_csv_no_github(nome_arquivo, df):
     url = f"{GITHUB_REPO}/{nome_arquivo}"
-
-    
     response = requests.get(url, headers=HEADERS)
     if response.status_code == 200:
         conteudo_atual = response.json()
-        sha = conteudo_atual["sha"]  
+        sha = conteudo_atual["sha"]  # Obter o SHA do arquivo atual
     else:
         st.error(f"Erro ao ler {nome_arquivo} do GitHub: {response.text}")
         return
 
-    
     conteudo = df.to_csv(index=False)
     conteudo_base64 = base64.b64encode(conteudo.encode("utf-8")).decode("utf-8")
     data = {
         "message": f"Atualizando {nome_arquivo}",
         "content": conteudo_base64,
-        "sha": sha  
+        "sha": sha  # Incluir o SHA para atualizar o arquivo
     }
 
-    
     response = requests.put(url, headers=HEADERS, json=data)
     if response.status_code not in [200, 201]:
         st.error(f"Erro ao gravar {nome_arquivo} no GitHub: {response.text}")
     else:
         st.success(f"{nome_arquivo} atualizado com sucesso!")
-
 
 def carregar_dados():
     produtos = ler_csv_do_github("produtos.csv")
@@ -67,19 +59,21 @@ def carregar_dados():
     vendas = ler_csv_do_github("vendas.csv")
     orcamentos = ler_csv_do_github("orcamentos.csv")
 
-    
+    # Inicializar DataFrames vazios se necessário
     if orcamentos.empty:
         orcamentos = pd.DataFrame(columns=["orcamento_id", "data", "total", "produtos", "status"])
     if estoque.empty:
         estoque = pd.DataFrame(columns=["produto_id", "nome", "quantidade"])
-    
+    if usuarios.empty:
+        usuarios = pd.DataFrame(columns=["id", "nome", "email", "senha"])  # Adicione a coluna "senha"
 
+    # Converter colunas de data
     if "data" in orcamentos.columns:
         orcamentos["data"] = pd.to_datetime(orcamentos["data"], format="%d/%m/%y %H:%M", errors="coerce")
     if "data" in vendas.columns:
         vendas["data"] = pd.to_datetime(vendas["data"], format="%d/%m/%y %H:%M", errors="coerce")
 
-
+    # Converter colunas numéricas
     if "produto_id" in estoque.columns:
         estoque["produto_id"] = pd.to_numeric(estoque["produto_id"], errors="coerce").fillna(0).astype(int)
     if "preco" in produtos.columns:
@@ -89,16 +83,14 @@ def carregar_dados():
 
     return produtos, usuarios, estoque, orcamentos, vendas
 
-
+# Carregar dados
 produtos, usuarios, estoque, orcamentos, vendas = carregar_dados()
 
-
+# Inicializar os dados na sessão
 if "usuarios" not in st.session_state:
-    if usuarios.empty:
-        usuarios = pd.DataFrame(columns=["id", "nome", "senha"])  
     st.session_state.usuarios = usuarios
 
-
+# Verificar se a coluna 'senha' existe
 if isinstance(st.session_state.usuarios, pd.DataFrame):
     if "senha" in st.session_state.usuarios.columns:
         st.session_state.usuarios["senha"] = st.session_state.usuarios["senha"].astype(str)
@@ -218,7 +210,6 @@ else:
         produto_selecionado = st.selectbox("Selecione o Produto para Editar", ["---"] + produtos_list)
 
         if produto_selecionado != "---":
-         
             # Obter os dados do produto selecionado
             produto_id = st.session_state.produtos.loc[st.session_state.produtos["nome"] == produto_selecionado, "id"].values[0]
             produto_nome_atual = st.session_state.produtos.loc[st.session_state.produtos["nome"] == produto_selecionado, "nome"].values[0]
