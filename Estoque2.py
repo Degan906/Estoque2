@@ -11,7 +11,7 @@ st.set_page_config(page_title="Controle de Estoque e Orçamentos", layout="wide"
 
 # Substitua pelo seu token do GitHub
 GITHUB_REPO = "https://api.github.com/repos/Degan906/Estoque2/contents"
-GITHUB_TOKEN = "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"  # Substitua pelo seu token
+GITHUB_TOKEN = "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"  # Substitua pelo seu token
 HEADERS = {
     "Authorization": f"token {GITHUB_TOKEN}",
     "Accept": "application/vnd.github.v3+json"
