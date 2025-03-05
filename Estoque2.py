@@ -129,7 +129,7 @@ if not st.session_state.logado:
     senha = st.text_input("Senha", type="password").strip()
     if st.button("Entrar"):
         # Verificação de dados de login para admin
-        if email == "admin@example.com" and senha == "admin":
+        if email == "admin" and senha == "admin":
             st.session_state.logado = True
             st.success("Login administrativo realizado com sucesso!")
         else:
